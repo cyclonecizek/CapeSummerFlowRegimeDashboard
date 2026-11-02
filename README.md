@@ -42,6 +42,13 @@ Same data and code as the statewide page, focused on KSC and CCSFS:
   the first strike has happened by each local hour. Rebuild with
   `python scripts/build_cape_lightning.py "First Strike Timing Tool Excel2010.xlsm"`
   (writes `data/cape_ltg.json`; the workbook itself doesn't need to be in the repo).
+- **Cizek Lightning Random Forest**: probability of lightning within the KSC/CCSFS
+  lightning warning rings during the calendar day (500 trees, depth 6, trained on
+  10Z KXMR soundings; predictors Thompson index, 1000–700 mb mean u-wind in kt, 700–500 mb
+  mean RH), evaluated in the browser on the XMR sounding, the selected model and every
+  GEFS and EC ENS member, with an 8-day outlook and a sensitivity readout. Re-export
+  after retraining with `python scripts/export_rf.py model.sav data/rf_xmr10z.json`,
+  using the scikit-learn version the model was trained with.
 - **Lightning odds** from the AMU flow-regime table (≥1 CG in the 10 KSC/CCSFS 5 n mi
   warning circles, 0700–0000 EDT, May–September 1989–2005), for the regime call and
   weighted by the ensemble regime odds.
@@ -102,6 +109,11 @@ used in place of downloading that station. You don't need to commit the raw CSV.
   so each ensemble votes in the consensus with its most likely member regime.
 - Ensemble requests are the heaviest on Open-Meteo's free limits, so processed results
   are cached in the browser for 3 hours. Refresh clears the cache.
+- Thompson index needs 850 and 700 mb humidity. Profile requests retry without the
+  optional water-vapour field if a model rejects it, ensembles fall back to a model
+  ID that carries humidity aloft (GEFS 0.5° if 0.25° lacks it), and a missing
+  sounding TI is filled from the selected model's profile and labeled. The
+  "profiles" chips in the status line say how many days or members have a TI.
 - If a model is missing, hover its red chip in the status line to see Open-Meteo's
   error message.
 
